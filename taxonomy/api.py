@@ -6,8 +6,7 @@ from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 
 from taxonomy.models import Taxonomy, Accession
-from taxonomy.serializers import TaxonomySerializer, NestedTaxonomySerializer
-
+from taxonomy.serializers import TaxonomySerializer, NestedTaxonomySerializer, RecursiveTaxonomySerializer
 
 class TaxonomyViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TaxonomySerializer
@@ -26,12 +25,18 @@ class TaxonomyViewSet(viewsets.ReadOnlyModelViewSet):
             filters['parent_id'] = parent
         return Taxonomy.objects.filter(**filters)
 
+    
     @action(detail=True, methods=['get'])
     def lineage(self, request, pk=None):
         taxonomy = self.get_object()
         serializer = NestedTaxonomySerializer(instance=taxonomy)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['get'])
+    def children(self, request, pk=None):
+        taxonomy = self.get_object()
+        serializer = RecursiveTaxonomySerializer(instance=taxonomy)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class AccessionViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TaxonomySerializer
@@ -72,3 +77,56 @@ class LCAView(viewsets.ViewSet):
 
         serializer = TaxonomySerializer(values[0])
         return Response(serializer.data)
+
+class TaxonomyGenomeViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = TaxonomySerializer
+    filter_backends = (SearchFilter, DjangoFilterBackend)
+    filter_fields = ('rank', 'division',)
+    search_fields = ('name', 'taxid',)
+
+    def get_queryset(self):
+        """
+        `?parent` filter was implemented outside django filters to avoid the data overload in Browsable API due high
+        number of parents loaded into filter widget.
+        """
+        filters = {}
+        parent = self.request.GET.get('parent', None)
+        if parent:
+            filters['parent_id'] = parent
+        return Taxonomy.objects.filter(**filters)
+
+    
+    @action(detail=True, methods=['get'])
+    def accession_data(self, request, pk=None):
+        taxonomy = self.get_object()
+        serializer = RecursiveTaxonomySerializer(instance=taxonomy)
+        nodes = get_nodes(serializer.data)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TaxonomyAssemblyViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = TaxonomySerializer
+    filter_backends = (SearchFilter, DjangoFilterBackend)
+    filter_fields = ('rank', 'division',)
+    search_fields = ('name', 'taxid',)
+
+    def get_queryset(self):
+        """
+        `?parent` filter was implemented outside django filters to avoid the data overload in Browsable API due high
+        number of parents loaded into filter widget.
+        """
+        filters = {}
+        parent = self.request.GET.get('parent', None)
+        if parent:
+            filters['parent_id'] = parent
+        return Taxonomy.objects.filter(**filters)
+
+    
+    @action(detail=True, methods=['get'])
+    def accession_data(self, request, pk=None):
+        taxonomy = self.get_object()
+        serializer = RecursiveTaxonomySerializer(instance=taxonomy)
+        nodes = get_nodes(serializer.data)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)

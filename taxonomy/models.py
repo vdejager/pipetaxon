@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.functional import cached_property
 
+
 ALL_RANKS = ['no rank', 'superkingdom', 'kingdom', 'subkingdom', 'superphylum', 'phylum', 'subphylum', 'genus',
              'subspecies', 'subtribe', 'class', 'parvorder', 'tribe', 'varietas', 'subfamily', 'suborder', 'subclass',
              'superfamily', 'order', 'infraorder', 'cohort', 'superorder', 'forma', 'superclass', 'species group',
@@ -29,7 +30,7 @@ class Taxonomy(models.Model):
     updated_at = models.DateField(null=True, auto_now=True)
 
     def __str__(self):
-        return "{0}:{1}".format(self.rank, self.taxid)
+        return "{0}:{1}:{2}".format(self.rank, self.taxid, self.name)
 
     @cached_property
     def lineage(self):
@@ -39,6 +40,27 @@ class Taxonomy(models.Model):
             lineage.append(entry.parent)
             entry = entry.parent
         return lineage
+    
+    def children(self):
+        children =[]
+        children = Taxonomy.objects.filter(parent=self.taxid)
+        print(children)
+        return children
+    
+    def all_children(self):
+        nodes = []
+        c=self
+        def buildtree(c):
+            children = c.children()
+            for c in children:
+                parent = c.parent
+                taxid = c.taxid
+                nodes.append(c)
+                if (c.children()):
+                    buildtree(c)
+        buildtree(c)
+
+        return nodes
 
     def show_tree(self):
         return self.lineage
@@ -56,7 +78,7 @@ class Taxonomy(models.Model):
         return self._check_rank('genus')
 
     def family(self):
-        return self._check_rank('family')
+        return self._check_rank('fajomily')
 
     def order(self):
         return self._check_rank('order')
@@ -74,6 +96,8 @@ class Taxonomy(models.Model):
         return self._check_rank('superkingdom')
 
 
+    
+    
 class Accession(models.Model):
     accession = models.CharField(max_length=20, primary_key=True)
     taxonomy = models.IntegerField()

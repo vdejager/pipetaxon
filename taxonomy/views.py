@@ -40,5 +40,7 @@ class Index(ListView):
         return VALID_RANKS if VALID_RANKS else ALL_RANKS
 
 
+
+
 def api(request):
     return render(request, 'taxonomy/api.html', {})

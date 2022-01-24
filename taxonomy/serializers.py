@@ -8,8 +8,15 @@ class TaxonomySerializer(serializers.ModelSerializer):
         model = Taxonomy
         fields = ('taxid', 'rank', 'name', 'parent', 'division')
 
+   
+class RecursiveTaxonomySerializer(TaxonomySerializer):
+    def get_fields(self):
+        fields = super(RecursiveTaxonomySerializer, self).get_fields()
+        fields['children'] = RecursiveTaxonomySerializer(many=True)
+        return fields
 
 class RecursiveSerializer(serializers.Serializer):
+
     def to_representation(self, taxonomy):
         # prevent lineage to keep iterating over taxid 1 ( because it is it own parent )
         if taxonomy.taxid == 1:
@@ -24,3 +31,5 @@ class NestedTaxonomySerializer(serializers.ModelSerializer):
     class Meta:
         model = Taxonomy
         fields = ('taxid', 'rank', 'name', 'division', 'parent')
+    
+
