@@ -1,8 +1,22 @@
 import os
+import environ
+
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SECRET_KEY = 'FILL WITH A VALID SECRET_KEY'
-DEBUG = True
+# Take environment variables from .env file
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+# False if not in os.environ because of casting above
+DEBUG = env('DEBUG')
+
+# Raises Django's ImproperlyConfigured
+# exception if SECRET_KEY not in os.environ
+SECRET_KEY = env('SECRET_KEY')
+
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
@@ -50,23 +64,21 @@ TEMPLATES = [
 ]
 WSGI_APPLICATION = 'pipetaxon.wsgi.application'
 
+# Parse database connection url strings
+# like psql://user:pass@127.0.0.1:8458/db
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME' : 'pipetaxon',
-        'USER' : 'pipetaxon',
-        'PASSWORD' : 'pipetaxon',
-        'HOST' : 'localhost',
-        'PORT' : 5432
-    }
-}
+    # read os.environ['DATABASE_URL'] and raises
+    # ImproperlyConfigured exception if not found
+    #
+    # The db() method is an alias for db_url().
+    'default': env.db(),
 
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#    }
-#}
+    # read os.environ['SQLITE_URL']
+    'extra': env.db_url(
+        'SQLITE_URL',
+        default='sqlite:////tmp/pipetaxon-sqlite.db'
+    )
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {

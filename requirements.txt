@@ -1,13 +1,11 @@
-<<<<<<< HEAD
-django==3.2.8
-gunicorn==20.1.0
-djangorestframework==3.12.4
-django-filter==21.1
-anytree==2.8.0
-biopython==1.79
-=======
+#django stuff
 django==4.0.1
 gunicorn==20.1.0
 djangorestframework==3.13.1
 django-filter==21.1
->>>>>>> 2023a9d18980b8b0687158248f2d0586c84fb9d3
+
+# other packages
+biopython==1.79
+django-environ=0.8.1
+psycopg2-binary==2.9.3
+
