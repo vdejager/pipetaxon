@@ -3,13 +3,13 @@ import environ
 
 env = environ.Env(
     # set casting, default value
-    DEBUG=(bool, False)
+    DEBUG=(bool, True)
 )
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ENVIRON_DIR = os.path.dirname(BASE_DIR)
 # Take environment variables from .env file
-environ.Env.read_env(os.path.join(ENVIRON_DIR, '.env'))
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # False if not in os.environ because of casting above
 DEBUG = env('DEBUG')
@@ -71,14 +71,11 @@ DATABASES = {
     # read os.environ['DATABASE_URL'] and raises
     # ImproperlyConfigured exception if not found
     #
-    # The db() method is an alias for db_url().
+    # Parse database connection url strings like psql://user:pass@127.0.0.1:8458/db
+    # read os.environ['DATABASE_URL'] and raises ImproperlyConfigured exception if not found
     'default': env.db(),
-
     # read os.environ['SQLITE_URL']
-    'extra': env.db_url(
-        'SQLITE_URL',
-        default='sqlite:////tmp/pipetaxon-sqlite.db'
-    )
+    'extra': env.db('SQLITE_URL', default='sqlite:////tmp/pipetaxon-sqlite.db')
 }
 
 AUTH_PASSWORD_VALIDATORS = [
