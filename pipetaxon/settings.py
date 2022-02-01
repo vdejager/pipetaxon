@@ -143,6 +143,17 @@ NCBI_TAXONOMY_BASE = "rsync://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump"
 NCBI_NEW_TAXONOMY_DUMP = "new_taxdump.tar.gz"
 LOCAL_TAXONOMY_DIR = os.path.join( DATA_DIR, 'taxonomy')
 
+# notebooks
+NOTEBOOK_ARGUMENTS = [
+    # exposes IP and port
+    '--ip=0.0.0.0',
+    '--port=8888',
+    # disables the browser
+    '--no-browser',
+]
+
+
+# logging
 LOG_ROOT=BASE_DIR
 LOG_FILE="pipetaxon.log"
 
