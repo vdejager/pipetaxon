@@ -44,23 +44,33 @@ class Taxonomy(models.Model):
     def children(self):
         children =[]
         children = Taxonomy.objects.filter(parent=self.taxid)
-        print(children)
         return children
     
-    def all_children(self):
+    def all_children(self, mode='nodes'):
+        """
+        option: mode = 'nodes' return nodes
+        option: mode = 'taxids' return taxids
+        
+        """
         nodes = []
+        taxids=[self.taxid]
+
         c=self
         def buildtree(c):
             children = c.children()
             for c in children:
                 parent = c.parent
                 taxid = c.taxid
+                taxids.append(taxid)
                 nodes.append(c)
                 if (c.children()):
                     buildtree(c)
         buildtree(c)
 
-        return nodes
+        if mode=='taxids':
+            return taxids
+        else:
+            return nodes
 
     def show_tree(self):
         return self.lineage

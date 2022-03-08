@@ -39,16 +39,13 @@ class AssemblySummary(models.Model):
         return '%s (%s)' % (self.organism_name,self.assembly_accession)
 
 class Prokaryotes(models.Model):
-    guide_header = ['organism_name','taxid','bioproject_accession','bioproject_id','group',
-    'subgroup','size','gc','chromosome_refseq','chromosome_insdc','plasmids_refseq','plasmids_insdc','wgs','scaffolds',
-    'genes','proteins','release_date','modify_date','status','center','biosample_accession','assembly_accession','reference','ftp_path','pubmed_id','strain']
-    
     organism_name           = models.CharField(max_length=255)
     taxid                   = models.CharField(max_length=255, null=True, blank=True)
     bioproject_accession    = models.CharField(max_length=255, null=True, blank=True)
     bioproject_id           = models.CharField(max_length=255, null=True, blank=True)
     group                   = models.CharField(max_length=255, null=True, blank=True)
     subgroup                = models.CharField(max_length=255, null=True, blank=True)
+    size                    = models.CharField(max_length=255, null=True, blank=True)
     gc                      = models.CharField(max_length=255, null=True, blank=True)
     chromosome_refseq       = models.CharField(max_length=255, null=True, blank=True)
     chromosome_insdc        = models.CharField(max_length=255, null=True, blank=True)
@@ -58,15 +55,13 @@ class Prokaryotes(models.Model):
     scaffolds               = models.CharField(max_length=255, null=True, blank=True)
     genes                   = models.CharField(max_length=255, null=True, blank=True)
     proteins                = models.CharField(max_length=255, null=True, blank=True)
-    bioproject_accession    = models.CharField(max_length=255, null=True, blank=True)
-    proteins                = models.CharField(max_length=255, null=True, blank=True)
     release_date            = models.CharField(max_length=255, null=True, blank=True)
     modify_date             = models.CharField(max_length=255, null=True, blank=True)
     status                  = models.CharField(max_length=255, null=True, blank=True)
-    center                  = models.CharField(max_length=255, null=True, blank=True)
+    center                  = models.TextField(null=True, blank=True)
     biosample_accession     = models.CharField(max_length=255, null=True, blank=True)
     assembly_accession      = models.CharField(max_length=255, null=True, blank=True)
-    reference               = models.CharField(max_length=255, null=True, blank=True)
+    reference               = models.TextField(null=True, blank=True)
     ftp_path                = models.CharField(max_length=255, null=True, blank=True)
     pubmed_id               = models.CharField(max_length=255, null=True, blank=True)
     strain                  = models.CharField(max_length=255, null=True, blank=True)

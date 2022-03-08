@@ -38,6 +38,12 @@ class TaxonomyViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = RecursiveTaxonomySerializer(instance=taxonomy)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['get'])
+    def firstchildren(self, request, pk=None):
+        taxonomy = self.get_object()
+        serializer = RecursiveTaxonomySerializer(instance=taxonomy, many=False)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 class AccessionViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TaxonomySerializer
     queryset = Accession.objects.all()

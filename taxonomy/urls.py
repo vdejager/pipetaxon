@@ -9,6 +9,7 @@ router.register(r'api/taxonomy/genome', TaxonomyGenomeViewSet, basename='taxonom
 router.register(r'api/taxonomy/lca', LCAView, basename='taxonomy-lca')
 router.register(r'api/taxonomy', TaxonomyViewSet, basename='taxonomy')
 
+
 urlpatterns = [
     path('', Index.as_view(), name='site-list'),
     path('api/', api, name='site-api'),

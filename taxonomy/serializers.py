@@ -15,8 +15,11 @@ class RecursiveTaxonomySerializer(TaxonomySerializer):
         fields['children'] = RecursiveTaxonomySerializer(many=True)
         return fields
 
-class RecursiveSerializer(serializers.Serializer):
+class RecursiveSerializer(serializers.Serializer, many=True):
 
+    def __init__(self,*args, **kwargs):
+        self.many = kwargs['many']
+        
     def to_representation(self, taxonomy):
         # prevent lineage to keep iterating over taxid 1 ( because it is it own parent )
         if taxonomy.taxid == 1:

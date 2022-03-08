@@ -38,7 +38,8 @@ class Command(BaseCommand):
                        'release_type','genome_rep','seq_rel_date','asm_name','submitter',
                        'gbrs_paired_asm','paired_asm_comp','ftp_path','excluded_from_refseq',
                        'relation_to_type_material','asm_not_live_date']
-    guide_header = ['organism_name','taxid','bioproject_accession',
+
+    prokaryotes_header = ['organism_name','taxid','bioproject_accession',
                     'bioproject_id','group','subgroup','size','gc',
                     'chromosome_refseq','chromosome_insdc','plasmids_refseq',
                     'plasmids_insdc','wgs','scaffolds','genes','proteins',
@@ -60,11 +61,11 @@ class Command(BaseCommand):
         self.prokaryotes = settings.LOCAL_GENOME_REPORTS_PROKARYOTES 
         self.ani_report_prokaryotes = settings.LOCAL_ANI_REPORT_PROKARYOTES
         self.summary = settings.LOCAL_ASSEMBLY_SUMMARY
-        self.guide = {}
         
-        #self.read_guide()
         #self._import_assembly_summary()
-        self._import_ani_report_prokaryotes()
+        #self._import_ani_report_prokaryotes()
+        self._import_prokaryotes()
+        
         self._import_stats()
         
     @staticmethod
@@ -72,22 +73,6 @@ class Command(BaseCommand):
         print("Removing all assembly_summary entries...")
         AssemblySummary.objects.all().delete()
             
-    def read_guide(self):
-        logger.info("Reading prokaryote guide file %s"%self.prokaryotes)
-        
-        f = open(self.prokaryotes,'r')
-        for line in f:
-            line = line.strip()
-            if line.startswith('#'):
-                continue
-            
-            data = line.split('\t')
-            data = dict(zip(self.guide_header, data))
-            
-            self.guide[data['assembly_accession']] = data
-        
-        logger.info("Done loading guide with %s items:", len(self.guide.keys()))
-    
     def _import_assembly_summary(self):
         
         logger.info("Reading summary file %s"%self.summary)
@@ -102,6 +87,12 @@ class Command(BaseCommand):
                 continue
 
             data = line.split('\t')
+            data = [d[:255] for d in data]
+            
+            #l = [len(d)>255 for d in data]
+            #if any(l):
+            #    [print(len(d),d) for d in data]
+            
             data = dict(zip(self.assembly_header, data))
             #data['group'] = 'Bacteria'
             records.append(data)
@@ -138,11 +129,15 @@ class Command(BaseCommand):
         AssemblySummary.objects.all().delete()
         
         for i,data in enumerate(records):
+            
             #logger.info("data %s"%data)
             bulk_insert_data.append(AssemblySummary(**data))
                 
         AssemblySummary.objects.bulk_create(bulk_insert_data)
+        total_records = AssemblySummary.objects.all().count()
+        
         logger.info("Loaded %d of %d  records"%(i+1, total_records))
+        
         end = timeit.timeit()
         logger.info('time:%s'%(end - start))
     
@@ -186,15 +181,66 @@ class Command(BaseCommand):
         end = timeit.timeit()
         logger.info('time:%s'%(end - start))
 
+    def _import_prokaryotes(self):
+        
+        logger.info("Reading prokaryotes file %s"%self.prokaryotes)
+
+        f = open(self.prokaryotes,'r')
+        counter = 0
+        records = [] 
+        
+        for line in f:
+            line = line.strip()
+            if line.startswith('#'):
+                continue
+
+            data = line.split('\t')
+            data = [d[:255] for d in data]
+            
+            #l = [len(d)>255 for d in data]
+            #if any(l):
+            #    print(data)
+
+            data = dict(zip(self.prokaryotes_header, data))
+            #data['group'] = 'Bacteria'
+            records.append(data)
+
+        logger.info("Records %s"%len(records))
+        
+        #self._create_records(records)
+        self._bulk_create_prokaryotes_records(records)
+
+    @transaction.atomic     
+    def _bulk_create_prokaryotes_records(self,records):
+        start = timeit.timeit()
+        logger.info("Bulk Loading prokaryotes data into database")
+        total_records = len(records)
+        bulk_insert_data = []
+        Prokaryotes.objects.all().delete()
+        
+        for i,data in enumerate(records):
+            #logger.info("data %s"%data)
+            if (i % 10000 == 0):
+                logger.info("Loaded %d of %d  records"%(i+1, total_records))
+            bulk_insert_data.append(Prokaryotes(**data))
+                
+        Prokaryotes.objects.bulk_create(bulk_insert_data)
+        total_records = Prokaryotes.objects.all().count()
+        logger.info("Loaded %d of %d  records"%(i+1, total_records))
+        end = timeit.timeit()
+        logger.info('time:%s'%(end - start))
+
+
+
     def _import_stats(self):
         
         orgs = AssemblySummary.objects.all()
         logger.info("Organisms :%s"%orgs.count())
-        
         stats = orgs.order_by().values('assembly_level').distinct().annotate(count=Count('assembly_level'))
         
         for d in stats:
             logger.info("%(assembly_level)s : %(count)s"%d)
         
+
         
             
